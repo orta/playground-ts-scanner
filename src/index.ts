@@ -21,7 +21,7 @@ const makePlugin = (utils: PluginUtils) => {
       ds.title("Scanner Results");
       ds.p("This plugin will run the TypeScript scanner over a code in your editor.");
       ds.p(
-        "This isn't the same as what TypeScript is doing under the hood (because the Parser would handle re-scanning) but it's enough to have a sense of what is going on under the hood."
+        "This isn't the same as what TypeScript is actually doing (because the Parser would handle re-scanning) but it's enough to have a sense of what is going on under the hood."
       );
 
       scanContainer = document.createElement("div");
