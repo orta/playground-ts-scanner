@@ -6,7 +6,7 @@ Shows what the TypeScript Scanner reads for your TS/JS.
 
 ## Running this plugin
 
-- [Click this link](https://www.staging-typescript.org/play?install-plugin=playground-ts-scanner) to install
+- [Click this link](https://www.typescriptlang.org/play?install-plugin=playground-ts-scanner) to install
 
 or
 
