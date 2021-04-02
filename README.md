@@ -6,14 +6,14 @@ Shows what the TypeScript Scanner reads for your TS/JS.
 
 ## Running this plugin
 
-- [Click this link](https://www.staging-typescript.org/play?install-plugin=[name]) to install
+- [Click this link](https://www.staging-typescript.org/play?install-plugin=playground-ts-scanner) to install
 
 or
 
 - Open up the TypeScript Playground
 - Go the "Plugins" in the sidebar
 - Look for "Plugins from npm"
-- Add "[name]"
+- Add "playground-ts-scanner"
 - Reload the browser
 
 Then it will show up as a tab in the sidebar.
