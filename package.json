@@ -1,6 +1,6 @@
 {
   "name": "playground-ts-scanner",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "dist/index.js",
   "description": "See the results of the TypeScript Scanner on some code",
   "license": "MIT",

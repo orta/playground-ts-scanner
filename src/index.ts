@@ -4,7 +4,9 @@ import { formatEnum } from "./formatEnum";
 export interface TokenInfo {
   kind: import("typescript").SyntaxKind;
   token: string;
+  start: number;
   end: number;
+  jsdocTokens?: TokenInfo[];
 }
 
 const makePlugin = (utils: PluginUtils) => {
@@ -49,44 +51,87 @@ const makePlugin = (utils: PluginUtils) => {
       const tokens: TokenInfo[] = [];
 
       let kind;
+      let start = 0;
       while (kind != ts.SyntaxKind.EndOfFileToken) {
         kind = scanner.scan();
         const end = scanner.getTextPos();
-        tokens.push({
+        const token: TokenInfo = {
           kind,
           token: formatEnum(ts, kind, ts.SyntaxKind),
+          start,
           end,
-        });
+        };
+
+        let jsdocTokens: TokenInfo[] = [];
+
+        // Handle JSDoc parsing, basically the same thing as above, but uses scanJsDocToken
+        if (kind === ts.SyntaxKind.MultiLineCommentTrivia && isJSDocLikeText(scanner.getText(), start)) {
+          scanner.scanRange(start + 3, end - start - 5, () => {
+            let token = scanner.scanJsDocToken();
+            let jsDocStart = start + 3;
+
+            while (token != ts.SyntaxKind.EndOfFileToken) {
+              const jsDocEnd = scanner.getTextPos();
+
+              jsdocTokens.push({
+                kind,
+                token: formatEnum(ts, token, ts.SyntaxKind),
+                start: jsDocStart,
+                end: jsDocEnd,
+              });
+
+              jsDocStart = jsDocEnd;
+              token = scanner.scanJsDocToken();
+            }
+          });
+        }
+
+        if (jsdocTokens.length) token.jsdocTokens = jsdocTokens;
+        tokens.push(token);
+        start = end;
       }
 
       scanDS.clear();
       scanDS.subtitle("Scan results");
 
-      const ul = document.createElement("ul");
-      scanContainer.appendChild(ul);
+      const renderTokens = (container: HTMLElement, tokens: TokenInfo[]) => {
+        const ul = document.createElement("ul");
+        container.appendChild(ul);
 
-      tokens.forEach((t, i) => {
-        const li = document.createElement("li");
-        ul.appendChild(li);
-        li.innerHTML = `<code>${t.token}</code>`;
-
-        li.onmouseover = () => {
-          const beforeIndex = i - 1;
-          let startPos = model.getPositionAt(0);
-          if (beforeIndex >= 0) {
-            const beforeToken = tokens[beforeIndex];
-            startPos = model.getPositionAt(beforeToken.end);
-          }
-          const endPos = model.getPositionAt(t.end);
+        tokens.forEach((t, i) => {
+          const li = document.createElement("li");
+          ul.appendChild(li);
           
-          sandbox.editor.setSelection({
-            selectionStartLineNumber: startPos.lineNumber,
-            selectionStartColumn: startPos.column,
-            positionLineNumber: endPos.lineNumber,
-            positionColumn: endPos.column,
-          });
-        }
-      });
+          if (t.jsdocTokens) {
+            li.innerHTML = `<code>${t.token}</code><p>JSDoc:</p>`;
+            renderTokens(li, t.jsdocTokens);
+          } else {
+            li.innerHTML = `<code>${t.token}</code>`;
+            li.onmouseover = () => {
+              const beforeIndex = i - 1;
+              let startPos = model.getPositionAt(0);
+              if (beforeIndex >= 0) {
+                const beforeToken = tokens[beforeIndex];
+                startPos = model.getPositionAt(beforeToken.end);
+              }
+              const endPos = model.getPositionAt(t.end);
+
+              sandbox.editor.setSelection({
+                selectionStartLineNumber: startPos.lineNumber,
+                selectionStartColumn: startPos.column,
+                positionLineNumber: endPos.lineNumber,
+                positionColumn: endPos.column,
+              });
+            };
+          }
+        });
+      };
+
+      renderTokens(scanContainer, tokens);
+
+      function isJSDocLikeText(text: string, start: number) {
+        return text.charCodeAt(start + 1) === 42 && text.charCodeAt(start + 2) === 42 && text.charAt(start + 3) !== "/";
+      }
     },
   };
 

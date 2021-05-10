@@ -1,6 +1,6 @@
 ## TypeScript Playground Plugin
 
-Shows what the TypeScript Scanner reads for your TS/JS.
+Shows what the TypeScript Scanner reads when running over your TS/JS code.
 
 ![](./screenshot.png)
 
